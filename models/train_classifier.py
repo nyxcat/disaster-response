@@ -14,7 +14,10 @@ from sklearn.multioutput import MultiOutputClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import classification_report, f1_score, precision_score, recall_score, accuracy_score
-
+import sys
+import os
+os.system('pip install scikit-multilearn')
+from skmultilearn.problem_transform import LabelPowerset
 import nltk
 nltk.download(['punkt', 'stopwords', 'wordnet', 'averaged_perceptron_tagger'])
 
@@ -167,23 +170,19 @@ def build_model(tokenize):
     pipeline = Pipeline([
         ('features', FeatureUnion([
             ('nlp_pipeline', Pipeline([
-                ('counter', CountVectorizer(tokenizer=tokenize, max_df=0.3, ngram_range=(1,1))),
+                ('counter', CountVectorizer(tokenizer=tokenize)),
                 ('tfidf', TfidfTransformer(norm=None, smooth_idf=True))
             ])),
             ('verb_count', VerbExtractor()),
             ('punc_count', PunctuationExtractor()),
             ('word_len', WordLenExtractor())
         ])),
-        ('clf', MultiOutputClassifier(RandomForestClassifier(n_estimators=50)))
+        ('clf', LabelPowerset(RandomForestClassifier(n_jobs=1, min_samples_split=4, criterion='gini')))
     ])
 
-    parameters = {
-        'clf__estimator__min_samples_split': [2]
-    }
-
-    cv = GridSearchCV(pipeline, param_grid=parameters)
-    # cv.fit(X_train, Y_train)
-    return cv
+    # cv = GridSearchCV(pipeline, param_grid=parameters)
+   # pipeline.fit(X_train, Y_train)
+    return pipeline
 
 def evaluate_model(model, X_test, Y_test, category_names):
     '''
@@ -196,14 +195,14 @@ def evaluate_model(model, X_test, Y_test, category_names):
         Y_test(numpy arrays): test output
         category_names(list): list of label names
     '''
-    Y_pred = model.predict(X_test)
+    Y_pred = model.predict(X_test).toarray()
     for i in range(Y_test.shape[1]):
         print('lable {}'.format(category_names[i]))
         print(classification_report(Y_test[:, i], Y_pred[:, i]))
 
 
 def save_model(model, model_filepath):
-    joblib.dump(model.best_estimator_,  model_filepath, compress=3)
+    joblib.dump(model,  model_filepath,compress=3)
 
 
 def main():

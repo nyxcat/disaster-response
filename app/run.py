@@ -4,10 +4,22 @@ import pandas as pd
 import numpy as np
 import sys
 import re
+import os
+# check if skmulitlearn is installed, if not install it.
+import os
+try:
+    import skmultilearn
+except ImportError:
+    os.system('pip install scikit-multilearn')
+
+from skmultilearn.problem_transform import LabelPowerset
 from sklearn.base import BaseEstimator, TransformerMixin
 from string import punctuation
-from nltk.stem import WordNetLemmatizer
-from nltk.tokenize import word_tokenize
+import nltk
+nltk.download(['punkt', 'stopwords', 'wordnet', 'averaged_perceptron_tagger'])
+from nltk import word_tokenize, sent_tokenize
+from nltk.corpus import stopwords, wordnet
+from nltk.stem.wordnet import WordNetLemmatizer
 from nltk import pos_tag
 
 from flask import Flask
@@ -90,10 +102,12 @@ def tokenize(text):
     return clean_tokens
 
 # load data
+print('Loading Database...')
 engine = create_engine('sqlite:///../data/DisasterResponse.db')
 df = pd.read_sql_table('msg_cat_merged', engine)
 
 # load model
+print('Loading Model...')
 model = joblib.load("../models/classifier.pkl")
 
 
@@ -107,7 +121,7 @@ def index():
     genre_counts = df.groupby('genre').count()['message']
     genre_names = list(genre_counts.index)
 #    genre_relate_counts = df.groupby(['genre', 'related']).count()['message']
-    print(df.head())
+   # print(df.head())
     y0_related = list()
     y1_related = list()
     for k, g in df.groupby(['genre', 'related']):
@@ -169,7 +183,7 @@ def index():
             ],
 
             'layout': {
-                'title': 'Number Of Related Events In Each Message Genres',
+                'title': 'Number Of Requested Events In Each Message Genres',
                 'yaxis': {
                     'title': "Count"
                 },
@@ -194,11 +208,14 @@ def index():
 def go():
     # save user input in query
     query = request.args.get('query', '') 
-
+    print(type(query))
+    print(query)
     # use model to predict classification for query
-    classification_labels = model.predict([query])[0]
-    classification_results = dict(zip(df.columns[4:], classification_labels))
-
+    print('predicting message...')
+    classification_labels = model.predict([query])[0].toarray()[0]
+    print('predicted {}'.format(classification_labels))
+    classification_results = dict(zip(df.columns[3:], classification_labels))
+    print('predicted {}'.format(classification_results)) 
     # This will render the go.html Please see that file. 
     return render_template(
         'go.html',
