@@ -129,19 +129,10 @@ def index():
             y0_related.append(g.count()['message'])
         if 1 in k:
             y1_related.append(g.count()['message'])
-    y0_request = list()
-    y1_request = list()
-    for k, g in df.groupby(['genre', 'request']):
-        if 0 in k:
-            y0_request.append(g.count()['message'])
-        if 1 in k:
-            y1_request.append(g.count()['message'])
-    # print(df.iloc[:, 3:])
 
-    # print(df.iloc[:, 3:].sum())
     cat = df.iloc[:, 3:].columns.values
     cat_count = df.iloc[:, 3:].sum().values
-    # print(cat, cat_count)
+
     # create visuals
     # TODO: Below is an example - modify to create your own visuals
     graphs = [
@@ -207,14 +198,9 @@ def index():
 def go():
     # save user input in query
     query = request.args.get('query', '') 
-    print(type(query))
-    print(query)
     # use model to predict classification for query
-    print('predicting message...')
     classification_labels = model.predict([query])[0].toarray()[0]
-    print('predicted {}'.format(classification_labels))
     classification_results = dict(zip(df.columns[3:], classification_labels))
-    print('predicted {}'.format(classification_results)) 
     # This will render the go.html Please see that file. 
     return render_template(
         'go.html',
