@@ -120,8 +120,7 @@ def index():
     # TODO: Below is an example - modify to extract data for your own visuals
     genre_counts = df.groupby('genre').count()['message']
     genre_names = list(genre_counts.index)
-#    genre_relate_counts = df.groupby(['genre', 'related']).count()['message']
-   # print(df.head())
+
     y0_related = list()
     y1_related = list()
     for k, g in df.groupby(['genre', 'related']):
