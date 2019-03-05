@@ -136,6 +136,12 @@ def index():
             y0_request.append(g.count()['message'])
         if 1 in k:
             y1_request.append(g.count()['message'])
+    # print(df.iloc[:, 3:])
+
+    # print(df.iloc[:, 3:].sum())
+    cat = df.iloc[:, 3:].columns.values
+    cat_count = df.iloc[:, 3:].sum().values
+    # print(cat, cat_count)
     # create visuals
     # TODO: Below is an example - modify to create your own visuals
     graphs = [
@@ -169,28 +175,21 @@ def index():
         {
             'data': [
                 {
-                    "x":  genre_names,
-                    "y": y0_request,
+                    "x":  cat,
+                    "y": cat_count,
                     "type": "bar",
-                    "name": "Not related"
-                },
-                {
-                    "x":  genre_names,
-                    "y": y1_request,
-                    "type": "bar",
-                    "name": "Related"
+                    "name": "Message Counts"
                 }
             ],
 
             'layout': {
-                'title': 'Number Of Requested Events In Each Message Genres',
+                'title': 'Number Of Messages In Each Category',
                 'yaxis': {
                     'title': "Count"
                 },
                 'xaxis': {
-                    'title': "Genre"
-                },
-                'barmode': 'stack'
+                    'title': "Category"
+                }
             }
         }
     ]
